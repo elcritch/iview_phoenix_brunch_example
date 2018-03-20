@@ -20,7 +20,10 @@ exports.config = {
       // }
     },
     stylesheets: {
-      joinTo: "css/app.css"
+        joinTo: {
+            "css/app.css": /^css/,
+            "css/vendor.css": /^(?!css)/
+        }
     },
     templates: {
       joinTo: "js/app.js"
@@ -61,10 +64,14 @@ exports.config = {
   },
   npm: {
       enabled: true,
-      whitelist: ["phoenix", "phoenix_html", "vue"],
+      whitelist: ["phoenix", "phoenix_html", "vue", "iview"],
       globals: {
         Vue: "vue/dist/vue.common.js"
       },
+      styles: {
+          iview: ["dist/styles/iview.css"]
+      }
+
       // aliases: {
           // vue: 'vue/dist/vue.common.js'
       // }

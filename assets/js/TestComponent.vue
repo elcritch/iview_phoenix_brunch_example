@@ -14,3 +14,10 @@
         }
     }
 </script>
+
+<style scoped>
+  h1 {
+    color: "red";
+  }
+</style>
+
