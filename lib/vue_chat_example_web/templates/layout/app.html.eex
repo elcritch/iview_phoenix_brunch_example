@@ -8,7 +8,12 @@
     <meta name="author" content="">
 
     <title>Hello VueChatExample!</title>
-    <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <link rel="stylesheet" href='<%= static_path(@conn, "/css/app.css") %>'>
+    <link rel="stylesheet" href='<%= static_path(@conn, "/css/components.css") %>'>
+    <link rel="stylesheet" href="//unpkg.com/iview/dist/styles/iview.css">
+
+    <title>Vue |> Phoenix</title>
+
   </head>
 
   <body>

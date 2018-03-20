@@ -19,3 +19,27 @@ import "phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 // import socket from "./socket"
+
+
+// import Vue from 'vue';
+import iView from 'iview';
+Vue.use(iView);
+// import 'iview/dist/styles/iview.css';
+
+import TestComponent from './TestComponent.vue';
+
+
+// Vue.component('test-component', {
+    // TestComponent
+// })
+
+new Vue({
+    el: '#vue-app',
+    data: {
+        message: "Hello World"
+    },
+    components: {
+        'test-component': TestComponent,
+    },
+});
+
