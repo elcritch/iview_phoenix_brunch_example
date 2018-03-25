@@ -71,7 +71,8 @@ exports.config = {
       whitelist: ["phoenix", "phoenix_html", "vue", "iview"],
       globals: {
           Vue: "vue/dist/vue.common.js",
-          iView: 'iview'
+          iView: 'iview',
+          "_": 'lodash',
       },
       styles: {
           iview: ["dist/styles/iview.css"],

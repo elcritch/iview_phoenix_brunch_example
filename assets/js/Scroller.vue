@@ -23,7 +23,7 @@ export default {
   },
   computed: {
     itemsInViewport() {
-      return Object.values(this.state, ).filter(({ isInViewport }) => isInViewport)
+        return _.pickBy(this.state, ({ isInViewport }) => isInViewport)
     }
   },
 }
@@ -33,25 +33,43 @@ export default {
 <div class="">
   <h1 class="white">Vue<span class="blue">ScrollMonitor</span></h1>
   <div>
+    <Layout>
+        <Header>Header</Header>
+        <Layout>
+            Sider
+            Content
+
     <scroll-container @change="updateState" class="flex">
-      <!-- <div class="flex-auto left"> -->
-      <!--   <scroll-item :lock="true"> -->
-      <!--     <div class="sidebar"> -->
-      <!--       <\!-- <prism language="javascript">{{ itemsInViewport }}</prism> -\-> -->
-      <!--       <pre> -->
-      <!--       {{ itemsInViewport }} -->
-      <!--       </pre> -->
-      <!--     </div> -->
-      <!--   </scroll-item> -->
-      <!-- </div> -->
-      <div class="">
-        <scroll-item v-for="i in 10" :id="i" :key="i" @change="onChange">
-          <p :class="`bloc mb4 mt0 pa6 f3 b tc white ${state[i] && state[i].isFullyInViewport ? 'bg-blue' : 'bg-light-blue'}`">
-            {{ i }}
-          </p>
+        <scroll-item :lock="true">
+          <Sider >
+            <!-- <prism language="javascript">{{ itemsInViewport }}</prism> -->
+            <pre>
+              {{ itemsInViewport }}
+            </pre>
+          </Sider>
         </scroll-item>
-      </div>
+
+        <scroll-item v-for="i in 10" :id="i" :key="i" @change="onChange">
+          <Content>
+              <p>
+                <Card :bordered="false">
+                  <Button >{{i}}</Button>
+              <!-- <Button :type=" state[i].isFullyInViewport  ? 'primary' : '' ">{{i}}</Button> -->
+                </Card>
+              </p>
+
+          <!-- <p :class="`bloc mb4 mt0 pa6 f3 b tc white ${state[i] && state[i].isFullyInViewport ? 'bg-blue' : 'bg-light-blue'}`"> -->
+            <!-- {{ i }} -->
+          <!-- </p> -->
+            </Content>
+        </scroll-item>
     </scroll-container>
+
+        </Layout>
+
+        <Footer>Footer</Footer>
+    </Layout>
+
   </div>
 </div>
 </template>
