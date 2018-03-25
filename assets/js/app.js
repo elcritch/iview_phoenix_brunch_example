@@ -23,15 +23,11 @@ import "phoenix_html"
 
 // import Vue from 'vue';
 import iView from 'iview';
+
 Vue.use(iView);
-// import 'iview/dist/styles/iview.css';
 
 import TestComponent from './TestComponent.vue';
 
-
-// Vue.component('test-component', {
-    // TestComponent
-// })
 
 new Vue({
     el: '#vue-app',
