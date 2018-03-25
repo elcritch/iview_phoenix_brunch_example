@@ -23,10 +23,13 @@ import "phoenix_html"
 
 // import Vue from 'vue';
 import iView from 'iview';
-
 Vue.use(iView);
 
+// import VueScrollMonitor from 'vue-scrollmonitor'
+// Vue.use(VueScrollMonitor)
+
 import TestComponent from './TestComponent.vue';
+import Scroller from './Scroller.vue';
 
 
 new Vue({
