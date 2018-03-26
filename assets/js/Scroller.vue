@@ -33,43 +33,25 @@ export default {
 <div class="">
   <h1 class="white">Vue<span class="blue">ScrollMonitor</span></h1>
   <div>
-    <Layout>
-        <Header>Header</Header>
-        <Layout>
-            Sider
-            Content
 
     <scroll-container @change="updateState" class="flex">
-        <scroll-item :lock="true">
-          <Sider >
-            <!-- <prism language="javascript">{{ itemsInViewport }}</prism> -->
-            <pre>
-              {{ itemsInViewport }}
-            </pre>
-          </Sider>
-        </scroll-item>
 
         <scroll-item v-for="i in 10" :id="i" :key="i" @change="onChange">
-          <Content>
               <p>
                 <Card :bordered="false">
-                  <Button >{{i}}</Button>
-              <!-- <Button :type=" state[i].isFullyInViewport  ? 'primary' : '' ">{{i}}</Button> -->
+                  <!-- <Button >{{state[i]}}</Button> -->
+                  <!-- <Button v-bind:class="{ primary: state[i].isFullyInViewport } ">{{i}} -- {{state[i]}}</Button> -->
+                  <!-- <Button >{{i}} -- {{ state[i] }}</Button> -->
                 </Card>
               </p>
 
           <!-- <p :class="`bloc mb4 mt0 pa6 f3 b tc white ${state[i] && state[i].isFullyInViewport ? 'bg-blue' : 'bg-light-blue'}`"> -->
             <!-- {{ i }} -->
           <!-- </p> -->
-            </Content>
         </scroll-item>
     </scroll-container>
 
-        </Layout>
-
-        <Footer>Footer</Footer>
-    </Layout>
-
+    <pre> {{JSON.stringify(state, 2) }} </pre>
   </div>
 </div>
 </template>
