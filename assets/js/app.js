@@ -13,6 +13,10 @@
 // to also remove its path from "config.paths.watched".
 import "phoenix_html"
 
+import "babel-polyfill";
+import 'babel-runtime/core-js/object/assign';
+
+
 // Import local files
 //
 // Local files can be imported directly using relative
@@ -23,8 +27,10 @@ import "phoenix_html"
 
 // import Vue from 'vue';
 import iView from 'iview';
-
 Vue.use(iView);
+
+// import VueScrollMonitor from 'vue-scrollmonitor'
+// Vue.use(VueScrollMonitor)
 
 import TestComponent from './TestComponent.vue';
 

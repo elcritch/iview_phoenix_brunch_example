@@ -1,5 +1,4 @@
 <div id="vue-app">
-    {{message}}
     <test-component>
     </test-component>
 </div>
