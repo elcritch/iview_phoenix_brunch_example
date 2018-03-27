@@ -19,7 +19,7 @@
   	    <input type="text" v-model="search" />
 			</div>
       
-      <button v-on:click="add">Add node</button>
+      <button v-on:click="add">widthPos: {{widthPos}}</button>
        
       <div>
 	      Selected: {{ selected }}
@@ -33,16 +33,12 @@
       <rect x="0" y="0" width="1000" height="50" style="stroke: #000000; fill: none" ></rect>
 
       <transition-group tag="g" name="list">
-        <g class="node"
-           v-for="(node, index) in bars"
+
+        <g 
+           v-for="(node, index) in currBars"
            v-bind:key="index">
 
-          <!-- <path v-for="link in links"
-                  v-bind:key="link.id"
-                  v-bind:d="link.d"
-                  v-bind:style="link.style"></path> -->
-
-          <rect v-for="i in 100" v-bind:x="15*node.x + i*10" v-bind:y="node.y" v-bind:width="3" v-bind:height="1" ></rect>
+          <rect v-for="i in 100" v-bind:key="15*node.x + i*10" v-bind:x="15*node.x + i*10" v-bind:y="node.y" v-bind:width="3" v-bind:height="node.z" ></rect>
 
         </g>
     	</transition-group>
@@ -69,17 +65,17 @@ export default {
                 height: 600
             },
             bars: [
-                {y: 10, x: 10},
-                {y: 10, x: 20},
-                {y: 10, x: 30},
-                {y: 10, x: 40},
-                {y: 10, x: 50},
-
-                {y: 30, x: 10},
-                {y: 30, x: 20},
-                {y: 30, x: 30},
-                {y: 30, x: 40},
-                {y: 30, x: 50},
+                {y: 10, x: 10, z: 1},
+                {y: 10, x: 20, z: 2},
+                {y: 10, x: 30, z: 3},
+                {y: 10, x: 40, z: 4},
+                {y: 10, x: 50, z: 5},
+                
+                {y: 30, x: 10, z: 5},
+                {y: 30, x: 20, z: 4},
+                {y: 30, x: 30, z: 3},
+                {y: 30, x: 40, z: 2},
+                {y: 30, x: 50, z: 1},
             ],
         };
     },
@@ -99,6 +95,13 @@ export default {
     
     computed: {
         
+        widthPos: function() { return Math.round( this.settings.width / 1000.0 * this.bars.length ); },
+        
+        currBars: function() {
+            
+            var cp = this.widthPos;
+            return this.bars.slice( cp - 1, cp + 1 );
+        },
         
         // once we have the CSV loaded, the "root" will be calculated
         
