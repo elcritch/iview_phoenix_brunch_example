@@ -25,10 +25,11 @@
                     <Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '20px 20px 0'}" type="navicon-round" size="24"></Icon>
                 </Header>
                 <Content :style="{margin: '20px', background: '#fff', minHeight: '100%'}">
-                    Content
+                    Content...
 
-                    <RandomChart>
-                    </RandomChart>
+                    <SvgChart>
+                    </SvgChart>
+
                 </Content>
             </Layout>
         </Layout>
@@ -39,11 +40,12 @@
 
 <script>
 
-  import RandomChart from './RandomChart.vue'
-  
-    export default {
+import RandomChart from './RandomChart.vue'
+import SvgChart from './SvgChart.vue'
+
+export default {
         components: {
-          RandomChart
+          SvgChart
         },
         data () {
             return {
