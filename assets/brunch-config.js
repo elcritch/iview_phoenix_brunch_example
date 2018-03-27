@@ -56,6 +56,11 @@ exports.config = {
       extractCSS: true,
         out: '../priv/static/css/components.css'
     },
+    copycat:{
+        "css/fonts" : ["node_modules/iview/dist/styles/fonts/"],
+        verbose : true, 
+        onlyChanged: true 
+    }
   },
 
   modules: {
