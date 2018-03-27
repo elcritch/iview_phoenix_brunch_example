@@ -2,7 +2,6 @@
 <template>
   <div class="layout">
 
-        <div class="layout">
         <Layout>
             <Sider ref="side1" hide-trigger collapsible :collapsed-width="78" v-model="isCollapsed">
                 <Menu active-name="1-2" theme="dark" width="auto" :class="menuitemClasses">
@@ -24,7 +23,7 @@
                 <Header :style="{padding: 0}" class="layout-header-bar">
                     <Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '20px 20px 0'}" type="navicon-round" size="24"></Icon>
                 </Header>
-                <Content :style="{margin: '20px', background: '#fff', minHeight: '100%'}">
+                <Content :style="{margin: '20px', background: '#fff', minHeight: '80%'}">
                     Content...
 
                     <SvgChart>
@@ -35,7 +34,6 @@
         </Layout>
     </div>
 
-  </div>
 </template>
 
 <script>

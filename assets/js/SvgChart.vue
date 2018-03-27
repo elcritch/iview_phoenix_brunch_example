@@ -28,7 +28,7 @@
 
     <!-- SVG that renders the chart based on the "width" and "height" setting from the Vue instance’s data object -->
     
-		<svg width="100%" height="200" v-bind:viewBox="`${settings.width} 0 250 50`" preserveAspectRatio="none">
+		<svg width="100%" height="50vh" v-bind:viewBox="`${settings.width} 0 250 50`" preserveAspectRatio="none">
     
       <rect x="0" y="0" width="1000" height="50" style="stroke: #000000; fill: none" ></rect>
 
