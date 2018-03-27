@@ -6,7 +6,7 @@
       
       <div>
 	      <label>Chart width</label>
-  	    <input type="range" v-model="settings.width" min="0" max="1000" />
+  	    <input type="range" v-model="settings.width" min="0" max="800" />
       </div>
      
       <div>
@@ -28,31 +28,21 @@
 
     <!-- SVG that renders the chart based on the "width" and "height" setting from the Vue instance’s data object -->
     
-		<svg v-bind:width="settings.width" v-bind:height="settings.height">
+		<svg width="100%" height="200" v-bind:viewBox="`${settings.width} 0 250 50`" preserveAspectRatio="none">
     
-    <!-- In contrast to D3’s "select" methods, we define the graphical elements explicitely here and use the template syntax to loop through collections and bind properties such as "d" or "r" to those elements. -->
-    
-      <transition-group tag="g" name="line" >
+      <rect x="0" y="0" width="1000" height="50" style="stroke: #000000; fill: none" ></rect>
 
-        <!-- Links are represented as paths -->
-        
-        <path v-for="link in links" class="link" v-bind:key="link.id" v-bind:d="link.d" v-bind:style="link.style"></path>
-        
-			</transition-group>
-
-
-      <!-- We can now also use events to elements that will call respective methods on the Vue instance --> 
-      
       <transition-group tag="g" name="list">
-        <g class="node" v-on:click="select(index, node)" v-for="(node, index) in nodes" v-bind:key="node.id" v-bind:style="node.style" v-bind:class="[node.className, {'highlight': node.highlight}]">
+        <g class="node"
+           v-for="(node, index) in bars"
+           v-bind:key="index">
 
-          <!-- Circles for each node -->  
+          <!-- <path v-for="link in links"
+                  v-bind:key="link.id"
+                  v-bind:d="link.d"
+                  v-bind:style="link.style"></path> -->
 
-          <circle v-bind:r="node.r" v-bind:style="{'fill': index == selected ? '#ff0000' : '#bfbfbf'}"></circle>
-
-          <!-- Finally, text labels -->
-
-          <text v-bind:dx="node.textpos.x" v-bind:dy="node.textpos.y" v-bind:style="node.textStyle">{{ node.text }}</text>
+          <rect v-for="i in 100" v-bind:x="15*node.x + i*10" v-bind:y="node.y" v-bind:width="3" v-bind:height="1" ></rect>
 
         </g>
     	</transition-group>
@@ -75,9 +65,22 @@ export default {
             search: "force",
             settings: {
                 strokeColor: "#19B5FF",
-                width: 600,
+                width: 0,
                 height: 600
-            }
+            },
+            bars: [
+                {y: 10, x: 10},
+                {y: 10, x: 20},
+                {y: 10, x: 30},
+                {y: 10, x: 40},
+                {y: 10, x: 50},
+
+                {y: 30, x: 10},
+                {y: 30, x: 20},
+                {y: 30, x: 30},
+                {y: 30, x: 40},
+                {y: 30, x: 50},
+            ],
         };
     },
     mounted: function() {
