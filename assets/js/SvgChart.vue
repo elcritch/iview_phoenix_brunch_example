@@ -6,7 +6,7 @@
       
       <div>
 	      <label>Chart width</label>
-  	    <Slider v-model="settings.width.value" :min="settings.width.min" :max="settings.width.max"></Slider>
+  	    <Slider v-model="viewport.slider_percent" :min="0.0" :max="1.0" :step="0.001" :tip-format="v => `Position: ${(100*v).toFixed(1)}%`"></Slider>
       </div>
      
       <div>
@@ -34,9 +34,13 @@
       >
 
       <svg width="100%" height="50vh"
-          v-bind:viewBox="`${settings.width.value} 0 ${settings.width.view} 50`" preserveAspectRatio="none">
+          v-bind:viewBox="`${view_position} ${viewport.y_min} ${viewport.x_size} ${viewport.y_size}`" preserveAspectRatio="none">
 
-        <rect x="0" y="0" width="1000" height="50" style="stroke: #000000; fill: none" ></rect>
+        <rect :x="viewport.x_min"
+              :y="viewport.y_min"
+              :width="viewport.x_max-10"
+              :height="viewport.y_size"
+              style="stroke: #000000; fill: none" ></rect>
 
         <transition-group  tag="g" name="list">
 
@@ -80,6 +84,8 @@ function idx(min) {
   return idxer;
 }
 
+//  Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
+
 export default {
     
     data: function() {
@@ -87,15 +93,22 @@ export default {
             csv: null,
             selected: null,
             search: "force",
+            info: {
+                length: 100,
+                rows: 3,
+            },
+            viewport: {
+                slider_percent: 0.0,
+                x_min: 0,
+                x_max: 800,
+                x_size: 250,
+                y_min: 0,
+                y_size: 100,
+                width: 1000,
+                height: 100,
+            },
             settings: {
                 strokeColor: "#19B5FF",
-                width: {
-                    value: 0,
-                    min: 0,
-                    max: 800,
-                    view: 250,
-                },
-                height: 600
             },
             bars: [
                 {y: 10, x: 100, z: 0},
@@ -111,9 +124,9 @@ export default {
                 {y: 30, x: 500, z: 0},
             ],
             bars2: Array.concat(
-                Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
-                Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 20, z: rand(0,1) } }),
-                Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 30, z: rand(0,1) } }),
+                Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
+                Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 20, z: rand(0,1) } }),
+                Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 30, z: rand(0,1) } }),
             ).sort( (i, j) => { return i.x - j.x } ),
         };
     },
@@ -130,29 +143,29 @@ export default {
             }
         ).catch(function(error) { throw error;});
         
+        var buffer = new ArrayBuffer(100);
+
+        var int32View = new Int8Array(buffer);
+
         console.log("bars2: ", JSON.stringify(this.bars2));
     },
     
     computed: {
         
+        view_position: function() { return Math.round( this.viewport.slider_percent * (this.viewport.x_max - this.viewport.x_size) ); }, 
         widthFactor: function() { return 3; },
         widthLen: function() { return Math.round( this.bars2.length / this.widthFactor ); },
-        widthPos: function() { return Math.round( (this.settings.width.value / this.settings.width.max) * this.widthLen ); },
+        widthPos: function() { return Math.round( (this.viewport.x_pos / this.viewport.max) * this.widthLen ); },
         
-        currPos: function () { return [ this.settings.width.value - 125, this.settings.width.value + 250 + 125 ]; }, 
+        currPos: function () { return [ this.viewport.x_pos - 125, this.viewport.x_pos + 250 + 125 ]; }, 
         
         currSlice: function() {
-            
             let viewCorrect = 100.0;
 
-            // let [x1, x2] = this.currPos;
-            let vw = this.widthFactor*this.settings.width.view
-
+            let vw = this.widthFactor*this.viewport.view
             let wp = this.widthPos * this.widthFactor / viewCorrect ;
             
             return [ Math.round(Math.max(wp - vw, 0)), Math.round(Math.min(wp + vw, this.bars2.length)) ];
-            // console.log(`x1,x2: ${x1}, ${x2}`);
-            // return this.bars2.filter( i => x1 <= i.x && i.x <= x2 );
         },
         
         currBars: function() {
@@ -171,11 +184,9 @@ export default {
  */
 
       move: function ({deltaY: dY, deltaX: dX}) {
-        // console.log("move: ", dY, dX);
         let dL = Math.min(dY, 10);
 
-          this.settings.width.value += dL;
-
+          this.viewport.slider_percent += dL / this.viewport.x_max;
       },
 			add: function () {
        this.csv.push({
