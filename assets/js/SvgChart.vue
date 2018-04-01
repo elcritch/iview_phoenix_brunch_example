@@ -81,9 +81,9 @@
               v-bind:key="(idxs.min + i) + row_idx / 100 "
               :id="(idxs.min + i) + row_idx / 100 "
               v-bind:x="x_idx_pos(i) "
-              v-bind:width="1"
-              v-bind:y="y_idx_pos(row_idx) - 4.1*elem(row_idx,idxs.min+i) "
-              v-bind:height="4.1*elem(row_idx,idxs.min+i) + 0.5"
+              v-bind:width="1.01"
+              v-bind:y="y_idx_pos(row_idx) - user_view.signal_height*elem(row_idx,idxs.min+i) "
+              v-bind:height="user_view.signal_height*elem(row_idx,idxs.min+i) + 0.5"
 
               class="data-block"
               >
@@ -130,6 +130,7 @@ export default {
             user_view: {
                 xpos_frac: 0.0,
                 width_count: 50,
+                signal_height: 3.18,
             },
             settings: {
                 strokeColor: "#19B5FF",
