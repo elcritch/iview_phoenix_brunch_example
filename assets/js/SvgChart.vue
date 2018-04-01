@@ -38,8 +38,8 @@
 
         <rect :x="viewport.x_min"
               :y="viewport.y_min"
-              :width="viewport.x_max-10"
-              :height="viewport.y_size"
+              :width="view.width"
+              :height="view.height"
               style="stroke: #000000; fill: none" ></rect>
 
         <transition-group  tag="g" name="list">
@@ -97,6 +97,10 @@ export default {
                 length: 100,
                 rows: 3,
             },
+            view: {
+                width: 1000,
+                height: 100,
+            },
             viewport: {
                 slider_percent: 0.0,
                 x_min: 0,
@@ -104,8 +108,6 @@ export default {
                 x_size: 250,
                 y_min: 0,
                 y_size: 100,
-                width: 1000,
-                height: 100,
             },
             settings: {
                 strokeColor: "#19B5FF",
@@ -152,7 +154,10 @@ export default {
     
     computed: {
         
-        view_position: function() { return Math.round( this.viewport.slider_percent * (this.viewport.x_max - this.viewport.x_size) ); }, 
+        view_position: function() {
+            return Math.round( this.viewport.slider_percent * (this.view.width - this.viewport.x_size) );
+        },
+
         widthFactor: function() { return 3; },
         widthLen: function() { return Math.round( this.bars2.length / this.widthFactor ); },
         widthPos: function() { return Math.round( (this.viewport.x_pos / this.viewport.max) * this.widthLen ); },
