@@ -15,7 +15,7 @@
 	      <label>Number Elements Displayed: {{user_view.width_count}}</label>
   	    <Slider v-model="user_view.width_count"
                 :min="10"
-                :max="1000"
+                :max="600"
                 :step="1"
                 :tip-format="v => `Count: ${v}`"
                 show-stops
@@ -110,7 +110,7 @@ export default {
             selected: null,
             search: "force",
             data_info: {
-                ncols: 5000,
+                ncols: 50000,
                 nrows: 3,
             },
             user_view: {
