@@ -44,24 +44,26 @@
 
         <transition-group  tag="g" name="list">
 
-          <!-- <g  
-              v-for="(node, index) in currBars" 
-              v-bind:key="index"> -->
-
-          <line 
-            v-for="(node, index) in currBars"
-            v-bind:key="node.x + node.y / 1000.0"
-            v-bind:x1="node.x "
-            v-bind:x2="node.x + 10.1"
-            v-bind:y1="node.y"
-            v-bind:y2="node.y"
-            v-bind:stroke-width="node.z + 0.5"
-            stroke="grey"
-            stroke-linecap="round"
+          <g  
+            v-for="row_idx in rows.length" 
+            v-bind:key="row_idx"
+            :id="`data_row${row_idx}`"
             >
-          </line>
 
-          <!-- </g> -->
+            <line 
+              v-for="(i, index) in rows[row_idx]"
+              v-bind:key="node.x + node.y / 1000.0"
+              v-bind:x1="node.x "
+              v-bind:x2="node.x + 10.1"
+              v-bind:y1="node.y"
+              v-bind:y2="node.y"
+              v-bind:stroke-width="node.z + 0.5"
+              stroke="grey"
+              stroke-linecap="round"
+              >
+            </line>
+
+          </g>
         </transition-group>
       </svg>
     </div>
@@ -95,7 +97,7 @@ export default {
             search: "force",
             info: {
                 length: 100,
-                rows: 3,
+                row_count: 3,
             },
             view: {
                 width: 1000,
@@ -112,19 +114,7 @@ export default {
             settings: {
                 strokeColor: "#19B5FF",
             },
-            bars: [
-                {y: 10, x: 100, z: 0},
-                {y: 10, x: 200, z: 1},
-                {y: 10, x: 300, z: 1},
-                {y: 10, x: 400, z: 0},
-                {y: 10, x: 500, z: 0},
-                
-                {y: 30, x: 100, z: 0},
-                {y: 30, x: 200, z: 0},
-                {y: 30, x: 300, z: 1},
-                {y: 30, x: 400, z: 1},
-                {y: 30, x: 500, z: 0},
-            ],
+
             bars2: Array.concat(
                 Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
                 Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 20, z: rand(0,1) } }),
@@ -137,17 +127,16 @@ export default {
         
         d3.csv("flare.csv").then(
             function(data) {
-                
-         	      // Load the CSV data
-	              // After the CSV has been loaded, the computed properties will automatically re-compute (root, tree, and then nodes & links…)
-                
                 that.csv = data;
             }
         ).catch(function(error) { throw error;});
         
-        var buffer = new ArrayBuffer(100);
+        // datum
+        var data1 = new Int8Array(new ArrayBuffer(100));
+        var data2 = new Int8Array(new ArrayBuffer(100));
+        var data3 = new Int8Array(new ArrayBuffer(100));
 
-        var int32View = new Int8Array(buffer);
+        this.datum = [data1, data2, data3];
 
         console.log("bars2: ", JSON.stringify(this.bars2));
     },
@@ -158,50 +147,16 @@ export default {
             return Math.round( this.viewport.slider_percent * (this.view.width - this.viewport.x_size) );
         },
 
-        widthFactor: function() { return 3; },
-        widthLen: function() { return Math.round( this.bars2.length / this.widthFactor ); },
-        widthPos: function() { return Math.round( (this.viewport.x_pos / this.viewport.max) * this.widthLen ); },
-        
-        currPos: function () { return [ this.viewport.x_pos - 125, this.viewport.x_pos + 250 + 125 ]; }, 
-        
-        currSlice: function() {
-            let viewCorrect = 100.0;
-
-            let vw = this.widthFactor*this.viewport.view
-            let wp = this.widthPos * this.widthFactor / viewCorrect ;
-            
-            return [ Math.round(Math.max(wp - vw, 0)), Math.round(Math.min(wp + vw, this.bars2.length)) ];
+        rows: function() {
+            return Array(this.settings.row_count).fill(0);
         },
-        
-        currBars: function() {
-            
-            return this.bars2.slice( ...this.currSlice );
 
-            // console.log(`x1,x2: ${x1}, ${x2}`);
-            // return this.bars2.filter( i => x1 <= i.x && i.x <= x2 );
-        },
-        // once we have the CSV loaded, the "root" will be calculated
-        
     },
     methods: {
-        /**
- * Returns a random number between min (inclusive) and max (exclusive)
- */
-
       move: function ({deltaY: dY, deltaX: dX}) {
         let dL = Math.min(dY, 10);
-
-          this.viewport.slider_percent += dL / this.viewport.x_max;
+        this.viewport.slider_percent += dL / this.viewport.x_max;
       },
-			add: function () {
-       this.csv.push({
-         id: "flare.physics.Dummy",
-         value: 0
-       })
-      },
-      select: function(index, node) {
-        this.selected = index;
-      }
     }
   }
 </script>
