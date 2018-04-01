@@ -5,8 +5,21 @@
     <Card class="controls">
       
       <div>
-	      <label>Chart width</label>
-  	    <Slider v-model="viewport.slider_percent" :min="0.0" :max="1.0" :step="0.001" :tip-format="v => `Position: ${(100*v).toFixed(1)}%`"></Slider>
+	      <label>Graph Postion</label>
+  	    <Slider v-model="user_view.xpos_frac"
+                :min="0.0"
+                :max="1.0"
+                :step="0.001"
+                :tip-format="v => `Position: ${(100*v).toFixed(1)}%`"
+              ></Slider>
+	      <label>Graph Zoom</label>
+  	    <Slider v-model="user_view.width_frac"
+                :min="0.1"
+                :max="1.0"
+                :step="0.1"
+                :tip-format="v => `Zoom: ${(100*v).toFixed(0)}%`"
+                show-stops
+              > </Slider>
       </div>
      
       <div>
@@ -19,10 +32,8 @@
   	    <input type="text" v-model="search" />
 			</div>
       
-      <button v-on:click="add">widthPos: {{widthPos}}</button> <br>
-      <button v-on:click="add">currPos: {{currPos}}</button> <br>
-      <button v-on:click="add">currSlice: {{currSlice}}</button> <br>
-      <button v-on:click="add">this.bars2.length: {{this.bars2.length}}</button> <br>
+      <pre >port: {{JSON.stringify(port, 2)}}</pre> <br>
+      <pre >indexes: {{JSON.stringify(indexes, 2)}}</pre> <br>
        
       <div> Selected: {{ selected }} </div>
     </Card>
@@ -34,12 +45,12 @@
       >
 
       <svg width="100%" height="50vh"
-          v-bind:viewBox="`${view_position} ${viewport.y_min} ${viewport.x_size} ${viewport.y_size}`" preserveAspectRatio="none">
+          v-bind:viewBox="`${port.x_pos} ${port.y_pos} ${port.x_size} ${port.y_size}`" preserveAspectRatio="none">
 
-        <rect :x="viewport.x_min"
-              :y="viewport.y_min"
-              :width="view.width"
-              :height="view.height"
+        <rect :x="port.x_min"
+              :y="port.y_min"
+              :width="port.width"
+              :height="port.height"
               style="stroke: #000000; fill: none" ></rect>
 
         <transition-group  tag="g" name="list">
@@ -77,13 +88,13 @@
 
 <script>
 function rand(min, max) {
-  return Math.round(Math.random() * (max - min) + min);
+    return Math.round(Math.random() * (max - min) + min);
 }
 
 function idx(min) {
-  let i = min;
-  function idxer() {return i++; };
-  return idxer;
+    let i = min;
+    function idxer() {return i++; };
+    return idxer;
 }
 
 //  Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
@@ -95,67 +106,68 @@ export default {
             csv: null,
             selected: null,
             search: "force",
-            info: {
-                length: 100,
-                row_count: 3,
+            data_info: {
+                ncols: 10,
+                nrows: 3,
             },
-            view: {
-                width: 1000,
-                height: 100,
-            },
-            viewport: {
-                slider_percent: 0.0,
-                x_min: 0,
-                x_max: 800,
-                x_size: 250,
-                y_min: 0,
-                y_size: 100,
+            user_view: {
+                xpos_frac: 0.0,
+                width_frac: 0.2,
             },
             settings: {
                 strokeColor: "#19B5FF",
             },
-
-            bars2: Array.concat(
-                Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
-                Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 20, z: rand(0,1) } }),
-                Array(100).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 30, z: rand(0,1) } }),
-            ).sort( (i, j) => { return i.x - j.x } ),
         };
     },
     mounted: function() {
-        var that = this;
-        
-        d3.csv("flare.csv").then(
-            function(data) {
-                that.csv = data;
-            }
-        ).catch(function(error) { throw error;});
+        var self = this;
+        let nrows = this.data_info.nrows;
+        let ncols = this.data_info.ncols;
         
         // datum
-        var data1 = new Int8Array(new ArrayBuffer(100));
-        var data2 = new Int8Array(new ArrayBuffer(100));
-        var data3 = new Int8Array(new ArrayBuffer(100));
-
-        this.datum = [data1, data2, data3];
-
-        console.log("bars2: ", JSON.stringify(this.bars2));
+        this.datum = Array(nrows).fill(0)
+            .map((i) => {return new Int8Array(new ArrayBuffer(ncols));});
+        
+        console.log("dataum: ", this.datum[0]);
     },
     
     computed: {
         
-        view_position: function() {
-            return Math.round( this.viewport.slider_percent * (this.view.width - this.viewport.x_size) );
+        port: function() {
+            let width = this.data_info.ncols
+            let height = 10 * (this.data_info.nrows + 2)
+            
+            let x_min = 0.0
+            let x_size = this.user_view.width_frac * this.data_info.ncols
+            let x_pos = ((width - x_size) * this.user_view.xpos_frac).toFixed(3)
+            
+            let y_min = 0.0
+            let y_pos = 0.0
+            let y_size = height
+            
+            return {
+                width, height, x_size, x_pos, y_size, y_pos, y_min, x_min, 
+            }
         },
-
+        
+        indexes: function() {
+            let idx_width = Math.ceil(this.port.x_size/2)
+            let idx_pos = Math.floor(this.port.x_pos) 
+            let idx_max = this.data_info.ncols
+            return {
+                min: Math.max(idx_pos - idx_width, 0),
+                max: Math.min(idx_max, idx_pos + idx_width),
+            }
+        },
         rows: function() {
-            return Array(this.settings.row_count).fill(0);
+            return Array(this.data_info.row_count).fill(0);
         },
 
     },
     methods: {
       move: function ({deltaY: dY, deltaX: dX}) {
         let dL = Math.min(dY, 10);
-        this.viewport.slider_percent += dL / this.viewport.x_max;
+        this.user_view.xpos_frac += dL / 1000.0;
       },
     }
   }
@@ -207,37 +219,8 @@ export default {
       fill: red;
     }
     
-    /* .controls { */
-    /*   position: fixed; */
-    /*   top: 16px;  */
-    /*   left: 16px; */
-    /*   background: #f8f8f8; */
-    /*   padding: 0.5rem; */
-    /*   display: flex; */
-    /*   flex-direction: column; */
-    /* } */
-    
-    /* .controls > * + * { */
-    /*   margin-top: 1rem; */
-    /* } */
-    
     label {
       display: block;
     }
     
-    /* .list-enter-active, .list-leave-active { */
-    /*   transition: all 0.2s; */
-    /* } */
-    /* .list-enter, .list-leave-to /\* .list-leave-active for <2.1.8 *\/ { */
-    /*   opacity: 0; */
-    /*   /\* transform: translateY(30px); *\/ */
-    /* } */
-    
-    /* .line-enter-active, .line-leave-active { */
-    /*   transition: all 0.2s; */
-    /*   stroke-dashoffset: 0; */
-    /* } */
-    /* .line-enter, .line-leave-to /\* .list-leave-active for <2.1.8 *\/ { */
-    /*   stroke-dashoffset: 1000; */
-    /* } */
 </style>
