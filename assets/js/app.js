@@ -15,7 +15,10 @@ import "phoenix_html"
 
 import "babel-polyfill";
 import 'babel-runtime/core-js/object/assign';
-
+import 'babel-runtime/helpers/slicedToArray';
+import 'babel-runtime/core-js/array/concat';
+import 'babel-runtime/core-js/json/stringify';
+import 'babel-runtime/helpers/toConsumableArray';
 
 // Import local files
 //

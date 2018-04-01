@@ -6,7 +6,7 @@
       
       <div>
 	      <label>Chart width</label>
-  	    <input type="range" v-model="settings.width" min="0" max="800" />
+  	    <Slider v-model="settings.width.value" :min="settings.width.min" :max="settings.width.max"></Slider>
       </div>
      
       <div>
@@ -19,30 +19,48 @@
   	    <input type="text" v-model="search" />
 			</div>
       
-      <button v-on:click="add">widthPos: {{widthPos}}</button>
+      <button v-on:click="add">widthPos: {{widthPos}}</button> <br>
+      <button v-on:click="add">currPos: {{currPos}}</button> <br>
+      <button v-on:click="add">currSlice: {{currSlice}}</button> <br>
+      <button v-on:click="add">this.bars2.length: {{this.bars2.length}}</button> <br>
        
-      <div>
-	      Selected: {{ selected }}
-      </div>
+      <div> Selected: {{ selected }} </div>
     </Card>
 
     <!-- SVG that renders the chart based on the "width" and "height" setting from the Vue instance’s data object -->
     
-		<svg width="100%" height="50vh" v-bind:viewBox="`${settings.width} 0 250 50`" preserveAspectRatio="none">
-    
-      <rect x="0" y="0" width="1000" height="50" style="stroke: #000000; fill: none" ></rect>
+    <div
+          v-on:wheel.prevent="move($event)" 
+      >
 
-      <transition-group tag="g" name="list">
+      <svg width="100%" height="50vh"
+          v-bind:viewBox="`${settings.width.value} 0 ${settings.width.view} 50`" preserveAspectRatio="none">
 
-        <g 
-           v-for="(node, index) in currBars"
-           v-bind:key="index">
+        <rect x="0" y="0" width="1000" height="50" style="stroke: #000000; fill: none" ></rect>
 
-          <rect v-for="i in 100" v-bind:key="15*node.x + i*10" v-bind:x="15*node.x + i*10" v-bind:y="node.y" v-bind:width="3" v-bind:height="node.z" ></rect>
+        <transition-group  tag="g" name="list">
 
-        </g>
-    	</transition-group>
-  	</svg>
+          <!-- <g  
+              v-for="(node, index) in currBars" 
+              v-bind:key="index"> -->
+
+          <line 
+            v-for="(node, index) in currBars"
+            v-bind:key="node.x + node.y / 1000.0"
+            v-bind:x1="node.x "
+            v-bind:x2="node.x + 10.1"
+            v-bind:y1="node.y"
+            v-bind:y2="node.y"
+            v-bind:stroke-width="node.z + 0.5"
+            stroke="grey"
+            stroke-linecap="round"
+            >
+          </line>
+
+          <!-- </g> -->
+        </transition-group>
+      </svg>
+    </div>
 
       <div>
 	      Test: {{ tests }}
@@ -52,6 +70,16 @@
 </template>
 
 <script>
+function rand(min, max) {
+  return Math.round(Math.random() * (max - min) + min);
+}
+
+function idx(min) {
+  let i = min;
+  function idxer() {return i++; };
+  return idxer;
+}
+
 export default {
     
     data: function() {
@@ -61,22 +89,32 @@ export default {
             search: "force",
             settings: {
                 strokeColor: "#19B5FF",
-                width: 0,
+                width: {
+                    value: 0,
+                    min: 0,
+                    max: 800,
+                    view: 250,
+                },
                 height: 600
             },
             bars: [
-                {y: 10, x: 10, z: 1},
-                {y: 10, x: 20, z: 2},
-                {y: 10, x: 30, z: 3},
-                {y: 10, x: 40, z: 4},
-                {y: 10, x: 50, z: 5},
+                {y: 10, x: 100, z: 0},
+                {y: 10, x: 200, z: 1},
+                {y: 10, x: 300, z: 1},
+                {y: 10, x: 400, z: 0},
+                {y: 10, x: 500, z: 0},
                 
-                {y: 30, x: 10, z: 5},
-                {y: 30, x: 20, z: 4},
-                {y: 30, x: 30, z: 3},
-                {y: 30, x: 40, z: 2},
-                {y: 30, x: 50, z: 1},
+                {y: 30, x: 100, z: 0},
+                {y: 30, x: 200, z: 0},
+                {y: 30, x: 300, z: 1},
+                {y: 30, x: 400, z: 1},
+                {y: 30, x: 500, z: 0},
             ],
+            bars2: Array.concat(
+                Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
+                Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 20, z: rand(0,1) } }),
+                Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 30, z: rand(0,1) } }),
+            ).sort( (i, j) => { return i.x - j.x } ),
         };
     },
     mounted: function() {
@@ -91,105 +129,54 @@ export default {
                 that.csv = data;
             }
         ).catch(function(error) { throw error;});
+        
+        console.log("bars2: ", JSON.stringify(this.bars2));
     },
     
     computed: {
         
-        widthPos: function() { return Math.round( this.settings.width / 1000.0 * this.bars.length ); },
+        widthFactor: function() { return 3; },
+        widthLen: function() { return Math.round( this.bars2.length / this.widthFactor ); },
+        widthPos: function() { return Math.round( (this.settings.width.value / this.settings.width.max) * this.widthLen ); },
+        
+        currPos: function () { return [ this.settings.width.value - 125, this.settings.width.value + 250 + 125 ]; }, 
+        
+        currSlice: function() {
+            
+            let viewCorrect = 100.0;
+
+            // let [x1, x2] = this.currPos;
+            let vw = this.widthFactor*this.settings.width.view
+
+            let wp = this.widthPos * this.widthFactor / viewCorrect ;
+            
+            return [ Math.round(Math.max(wp - vw, 0)), Math.round(Math.min(wp + vw, this.bars2.length)) ];
+            // console.log(`x1,x2: ${x1}, ${x2}`);
+            // return this.bars2.filter( i => x1 <= i.x && i.x <= x2 );
+        },
         
         currBars: function() {
             
-            var cp = this.widthPos;
-            return this.bars.slice( cp - 1, cp + 1 );
+            return this.bars2.slice( ...this.currSlice );
+
+            // console.log(`x1,x2: ${x1}, ${x2}`);
+            // return this.bars2.filter( i => x1 <= i.x && i.x <= x2 );
         },
-        
         // once we have the CSV loaded, the "root" will be calculated
         
-        root: function() {
-            
-            var that = this;
-            
-            if (this.csv) {
-                var stratify = d3.stratify().parentId(function(d) {
-                    return d.id.substring(0, d.id.lastIndexOf("."));
-                });
-                
-                // attach the tree to the Vue data object
-                return this.tree(
-                    stratify(that.csv).sort(function(a, b) {
-                        return a.height - b.height || a.id.localeCompare(b.id);
-                    })
-                );
-            }
-        },
-        
-        // the "tree" is also a computed property so that it is always up to date when the width and height settings change
-        
-        tree: function() {
-            return d3
-                .cluster()
-                .size([this.settings.height, this.settings.width - 160]);
-        },
-        
-        // Instead of enter, update, exit, we mainly use computed properties and instead of "d3.data()" we can use array.map to create objects that hold class names, styles, and other attributes for each datum
-        
-        nodes: function() {
-            var that = this;
-            if (this.root) {
-                return this.root.descendants().map(function(d) {
-                    return {
-                        id: d.id,
-                        r: 2.5,
-                        className: "node" +
-                            (d.children ? " node--internal" : " node--leaf"),
-                        text: d.id.substring(d.id.lastIndexOf(".") + 1),
-                        highlight: d.id.toLowerCase().indexOf(that.search.toLowerCase()) != -1 && that.search != "",
-                        style: {
-                            transform: "translate(" + d.y + "px," + d.x + "px)"
-                        },
-                        textpos: {
-                            x: d.children ? -8 : 8,
-                            y: 3
-                        },
-                        textStyle: {
-                            textAnchor: d.children ? "end" : "start"
-                        }
-                    };
-                });
-            }
-        },
-        
-        // Instead of enter, update, exit, we mainly use computed properties and instead of "d3.data()" we can use array.map to create objects that hold class names, styles, and other attributes for each datum
-        
-        links: function() {
-            var that = this;
-            
-            if (this.root) {
-                
-                // here we’ll calculate the "d" attribute for each path that is then used in the template where we use "v-for" to loop through all of the links to create <path> elements
-                
-                return this.root.descendants().slice(1).map(function(d) {
-                    return {
-                        id: d.id,
-                        d: "M" + d.y + "," + d.x + "C" + (d.parent.y + 100) + "," + d.x + " " + (d.parent.y + 100) + "," + d.parent.x + " " + d.parent.y + "," + d.parent.x,
-                        
-                        // here we could of course calculate colors depending on data but for now all links share the same color from the settings object that we can manipulate using UI controls and v-model
-                        
-                        style: {
-                            stroke: that.settings.strokeColor
-                        }
-                    };
-                });
-            }
-        },
-        tests: function() {
-          window.test = {}
-          window.test.root = this.root
-          window.test.nodes = this.nodes
-          window.test.links = this.links
-      }
     },
     methods: {
+        /**
+ * Returns a random number between min (inclusive) and max (exclusive)
+ */
+
+      move: function ({deltaY: dY, deltaX: dX}) {
+        // console.log("move: ", dY, dX);
+        let dL = Math.min(dY, 10);
+
+          this.settings.width.value += dL;
+
+      },
 			add: function () {
        this.csv.push({
          id: "flare.physics.Dummy",
@@ -267,19 +254,19 @@ export default {
       display: block;
     }
     
-    .list-enter-active, .list-leave-active {
-      transition: all 1s;
-    }
-    .list-enter, .list-leave-to /* .list-leave-active for <2.1.8 */ {
-      opacity: 0;
-      transform: translateY(30px);
-    }
+    /* .list-enter-active, .list-leave-active { */
+    /*   transition: all 0.2s; */
+    /* } */
+    /* .list-enter, .list-leave-to /\* .list-leave-active for <2.1.8 *\/ { */
+    /*   opacity: 0; */
+    /*   /\* transform: translateY(30px); *\/ */
+    /* } */
     
-    .line-enter-active, .line-leave-active {
-      transition: all 2s;
-      stroke-dashoffset: 0;
-    }
-    .line-enter, .line-leave-to /* .list-leave-active for <2.1.8 */ {
-      stroke-dashoffset: 1000;
-    }
+    /* .line-enter-active, .line-leave-active { */
+    /*   transition: all 0.2s; */
+    /*   stroke-dashoffset: 0; */
+    /* } */
+    /* .line-enter, .line-leave-to /\* .list-leave-active for <2.1.8 *\/ { */
+    /*   stroke-dashoffset: 1000; */
+    /* } */
 </style>
