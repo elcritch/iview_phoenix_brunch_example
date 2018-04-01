@@ -47,9 +47,9 @@
       <svg width="100%" height="50vh"
           v-bind:viewBox="`${port.x_pos} ${port.y_pos} ${port.x_size} ${port.y_size}`" preserveAspectRatio="none">
 
-        <rect :x="port.x_min"
+        <rect :x="port.x_min - 0.045*port.width"
               :y="port.y_min"
-              :width="port.width"
+              :width="port.width + 0.085*port.width"
               :height="port.height"
               style="stroke: #000000; fill: none" ></rect>
 
