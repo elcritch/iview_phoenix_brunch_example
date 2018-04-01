@@ -14,9 +14,9 @@
               ></Slider>
 	      <label>Graph Zoom</label>
   	    <Slider v-model="user_view.width_frac"
-                :min="0.1"
+                :min="0.01"
                 :max="1.0"
-                :step="0.1"
+                :step="0.01"
                 :tip-format="v => `Zoom: ${(100*v).toFixed(0)}%`"
                 show-stops
               > </Slider>
@@ -110,12 +110,12 @@ export default {
             selected: null,
             search: "force",
             data_info: {
-                ncols: 50,
+                ncols: 5000,
                 nrows: 3,
             },
             user_view: {
                 xpos_frac: 0.0,
-                width_frac: 0.2,
+                width_frac: 0.01,
             },
             settings: {
                 strokeColor: "#19B5FF",
