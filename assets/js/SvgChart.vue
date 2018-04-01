@@ -32,8 +32,8 @@
   	    <input type="text" v-model="search" />
 			</div>
       
-      <pre >port: {{JSON.stringify(port, 2)}}</pre> <br>
-      <pre >indexes: {{JSON.stringify(indexes, 2)}}</pre> <br>
+      <pre >port: {{JSON.stringify(port)}}</pre> <br>
+      <pre >idxs: {{JSON.stringify(idxs)}}</pre> <br>
        
       <div> Selected: {{ selected }} </div>
     </Card>
@@ -53,27 +53,32 @@
               :height="port.height"
               style="stroke: #000000; fill: none" ></rect>
 
-        <transition-group  tag="g" name="list">
+        <transition-group v-if="this.datum" tag="g" name="list">
 
           <g  
-            v-for="row_idx in rows.length" 
+            v-for="row_idx in data_info.nrows" 
             v-bind:key="row_idx"
             :id="`data_row${row_idx}`"
             >
 
             <line 
-              v-for="(i, index) in rows[row_idx]"
-              v-bind:key="node.x + node.y / 1000.0"
-              v-bind:x1="node.x "
-              v-bind:x2="node.x + 10.1"
-              v-bind:y1="node.y"
-              v-bind:y2="node.y"
-              v-bind:stroke-width="node.z + 0.5"
+              v-for="(_idx, i) in idxs.count"
+              v-bind:key="(idxs.min + i) + row_idx / 100 "
+              :id="(idxs.min + i) + row_idx / 100 "
+              v-bind:x1="x_idx_pos(i) "
+              v-bind:x2="x_idx_pos(i+1) "
+              v-bind:y1="y_idx_pos(row_idx)"
+              v-bind:y2="y_idx_pos(row_idx)"
+              v-bind:stroke-width="elem(row_idx,idxs.min+i) + 0.1"
               stroke="grey"
               stroke-linecap="round"
               >
             </line>
 
+
+            <!--
+              v-bind:stroke-width="datum[row_idx][idxs.min+i]"
+                -->
           </g>
         </transition-group>
       </svg>
@@ -97,8 +102,6 @@ function idx(min) {
     return idxer;
 }
 
-//  Array(1000).fill(0).map(idx(0)).map( (i) => { return { x: 10.0*i, y: 10, z: rand(0,1) } }),
-
 export default {
     
     data: function() {
@@ -107,7 +110,7 @@ export default {
             selected: null,
             search: "force",
             data_info: {
-                ncols: 10,
+                ncols: 50,
                 nrows: 3,
             },
             user_view: {
@@ -125,9 +128,15 @@ export default {
         let ncols = this.data_info.ncols;
         
         // datum
-        this.datum = Array(nrows).fill(0)
-            .map((i) => {return new Int8Array(new ArrayBuffer(ncols));});
+        this.datum = Array(nrows).fill(0).
+            map((i) => {return new Int8Array(new ArrayBuffer(ncols));});
         
+        this.datum.map( (d) => {
+            for (var i = 0; i < ncols; i++) {
+                d[i] = rand(0,1)
+            }
+        });
+
         console.log("dataum: ", this.datum[0]);
     },
     
@@ -141,33 +150,43 @@ export default {
             let x_size = this.user_view.width_frac * this.data_info.ncols
             let x_pos = ((width - x_size) * this.user_view.xpos_frac).toFixed(3)
             
+            let x_delta = this.data_info.ncols*1.0
+            
             let y_min = 0.0
             let y_pos = 0.0
             let y_size = height
             
             return {
-                width, height, x_size, x_pos, y_size, y_pos, y_min, x_min, 
+                width, height, x_size, x_pos, y_size, y_pos, y_min, x_min, x_delta,
             }
         },
         
-        indexes: function() {
+        idxs: function() {
             let idx_width = Math.ceil(this.port.x_size/2)
             let idx_pos = Math.floor(this.port.x_pos) 
-            let idx_max = this.data_info.ncols
-            return {
-                min: Math.max(idx_pos - idx_width, 0),
-                max: Math.min(idx_max, idx_pos + idx_width),
-            }
-        },
-        rows: function() {
-            return Array(this.data_info.row_count).fill(0);
-        },
+            let idx_max = this.data_info.ncols - 1
+            
+            let min = Math.max(idx_pos - idx_width, 0)
+            let max = Math.min(idx_max, idx_pos + 2*idx_width + 1)
+            let count = max - min
 
+            return { min, max, count, idx_max}
+        },
+        
     },
     methods: {
+        elem: function(row, col) {
+            return this.datum[row-1][col];
+        },
+        x_idx_pos: function(idx) {
+            let xpos = this.idxs.min + idx + 1
+            return xpos;
+        },
+        y_idx_pos: function(idx) {
+            return 10*idx;
+        },
       move: function ({deltaY: dY, deltaX: dX}) {
-        let dL = Math.min(dY, 10);
-        this.user_view.xpos_frac += dL / 1000.0;
+        this.user_view.xpos_frac += dY / 1000.0;
       },
     }
   }
