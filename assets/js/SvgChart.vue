@@ -9,13 +9,13 @@
   	    <Slider v-model="user_view.xpos_frac"
                 :min="0.0"
                 :max="1.0"
-                :step="0.001"
+                :step="0.000001"
                 :tip-format="v => `Position: ${(100*v).toFixed(1)}%`"
               ></Slider>
 	      <label>Number Elements Displayed: {{user_view.width_count}}</label>
   	    <Slider v-model="user_view.width_count"
                 :min="10"
-                :max="600"
+                :max="1000"
                 :step="1"
                 :tip-format="v => `Count: ${v}`"
                 show-stops
@@ -32,8 +32,8 @@
   	    <input type="text" v-model="search" />
 			</div>
       
-      <pre >port: {{JSON.stringify(port)}}</pre> <br>
-      <pre >idxs: {{JSON.stringify(idxs)}}</pre> <br>
+      <!-- <pre >port: {{JSON.stringify(port)}}</pre> <br> -->
+      <!-- <pre >idxs: {{JSON.stringify(idxs)}}</pre> <br> -->
        
       <div> Selected: {{ selected }} </div>
     </Card>
@@ -61,19 +61,33 @@
             :id="`data_row${row_idx}`"
             >
 
-            <line 
+            <!-- <line  -->
+            <!--   v-for="(_idx, i) in idxs.count" -->
+            <!--   v-bind:key="(idxs.min + i) + row_idx / 100 " -->
+            <!--   :id="(idxs.min + i) + row_idx / 100 " -->
+            <!--   v-bind:x1="x_idx_pos(i) " -->
+            <!--   v-bind:x2="x_idx_pos(i+1) " -->
+            <!--   v-bind:y1="y_idx_pos(row_idx)" -->
+            <!--   v-bind:y2="y_idx_pos(row_idx)" -->
+            <!--   v-bind:stroke-width="2*elem(row_idx,idxs.min+i) + 1" -->
+            <!--   stroke="grey" -->
+            <!--   stroke-linecap="round" -->
+            <!--   > -->
+            <!-- </line> -->
+
+
+            <rect 
               v-for="(_idx, i) in idxs.count"
               v-bind:key="(idxs.min + i) + row_idx / 100 "
               :id="(idxs.min + i) + row_idx / 100 "
-              v-bind:x1="x_idx_pos(i) "
-              v-bind:x2="x_idx_pos(i+1) "
-              v-bind:y1="y_idx_pos(row_idx)"
-              v-bind:y2="y_idx_pos(row_idx)"
-              v-bind:stroke-width="elem(row_idx,idxs.min+i) + 0.1"
-              stroke="grey"
-              stroke-linecap="round"
+              v-bind:x="x_idx_pos(i) "
+              v-bind:width="1"
+              v-bind:y="y_idx_pos(row_idx) - 4.1*elem(row_idx,idxs.min+i) "
+              v-bind:height="4.1*elem(row_idx,idxs.min+i) + 0.5"
+
+              class="data-block"
               >
-            </line>
+            </rect>
 
 
             <!--
@@ -110,8 +124,8 @@ export default {
             selected: null,
             search: "force",
             data_info: {
-                ncols: 50000,
-                nrows: 3,
+                ncols: 100000,
+                nrows: 5,
             },
             user_view: {
                 xpos_frac: 0.0,
@@ -133,11 +147,16 @@ export default {
         
         this.datum.map( (d) => {
             for (var i = 0; i < ncols; i++) {
-                // d[i] = rand(0,254)
-                d[i] = i % 254
+                d[i] = rand(0,128)
+                // d[i] = i % 254
             }
         });
         
+        for (var i = 0; i < ncols; i++) {
+            this.datum[0][i] = 0xAA;
+            // d[i] = i % 254
+        }
+
         console.log("dataum: ", this.datum[0]);
     },
     
@@ -179,69 +198,80 @@ export default {
         elem: function(row, col) {
             return (this.datum[row-1][Math.floor(col/8)] >>> (col %8)) & 1;
         },
+        x_idx_width: function(idx) {
+            return 1;
+        },
         x_idx_pos: function(idx) {
             let xpos = this.idxs.min + idx + 1
             return xpos;
         },
         y_idx_pos: function(idx) {
-            return 10*idx;
+            return 10*idx+5;
         },
         move: function ({deltaY: dY, deltaX: dX}) {
             let xf = this.user_view.xpos_frac
-            this.user_view.xpos_frac = Math.max(0.0, Math.min(1.0, xf + dY / 1000.0));
+            // let xs = ( 0.8 * this.port.x_size ) - 6
+            let xs = Math.log( 3* this.port.x_size ) - 2
+            let mv = dY / 10 / this.port.width * xs
+            this.user_view.xpos_frac = Math.max(0.0, Math.min(1.0, xf + mv ));
       },
     }
   }
 </script>
 
 <style >
-     body {
-      width: 100%;
-      height: 100%;
-      font-family: monospace;
-     }
-    
-    .node {
-    	opacity: 1;
-    }
+body {
+    width: 100%;
+    height: 100%;
+    font-family: monospace;
+}
 
-    .node circle {
-      fill: #999;
-      cursor: pointer;
-    }
+.node {
+    opacity: 1;
+}
 
-    .node text {
-      font: 10px sans-serif;
-      cursor: pointer;
-    }
+.node circle {
+    fill: #999;
+    cursor: pointer;
+}
 
-    .node--internal circle {
-      fill: #555;
-    }
+.node text {
+    font: 10px sans-serif;
+    cursor: pointer;
+}
 
-    .node--internal text {
-      text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
-    }
+.node--internal circle {
+    fill: #555;
+}
 
-    .link {
-      fill: none;
-      stroke: #555;
-      stroke-opacity: 0.4;
-      stroke-width: 1.5px;
-      stroke-dasharray: 1000;
-    }
+.node--internal text {
+    text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+}
 
-    .node:hover {
-      pointer-events: all;
-      stroke: #ff0000;
-    }
+.link {
+    fill: none;
+    stroke: #555;
+    stroke-opacity: 0.4;
+    stroke-width: 1.5px;
+    stroke-dasharray: 1000;
+}
 
-    .node.highlight {
-      fill: red;
-    }
-    
-    label {
-      display: block;
-    }
-    
+.node:hover {
+    pointer-events: all;
+    stroke: #ff0000;
+}
+
+.node.highlight {
+    fill: red;
+}
+
+label {
+    display: block;
+}
+
+.data-block {
+    fill: #1c2438;
+    stroke-linejoin: square;
+}
+
 </style>
