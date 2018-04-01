@@ -133,7 +133,8 @@ export default {
         
         this.datum.map( (d) => {
             for (var i = 0; i < ncols; i++) {
-                d[i] = rand(0,1)
+                // d[i] = rand(0,254)
+                d[i] = i % 254
             }
         });
         
@@ -176,7 +177,7 @@ export default {
     },
     methods: {
         elem: function(row, col) {
-            return this.datum[row-1][col];
+            return (this.datum[row-1][Math.floor(col/8)] >>> (col %8)) & 1;
         },
         x_idx_pos: function(idx) {
             let xpos = this.idxs.min + idx + 1
