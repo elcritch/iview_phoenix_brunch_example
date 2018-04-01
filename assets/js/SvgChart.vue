@@ -5,19 +5,19 @@
     <Card class="controls">
       
       <div>
-	      <label>Graph Postion</label>
+	      <label>Graph Postion: {{`${(100*user_view.xpos_frac).toFixed(1)}%`}}</label>
   	    <Slider v-model="user_view.xpos_frac"
                 :min="0.0"
                 :max="1.0"
                 :step="0.001"
                 :tip-format="v => `Position: ${(100*v).toFixed(1)}%`"
               ></Slider>
-	      <label>Graph Zoom</label>
-  	    <Slider v-model="user_view.width_frac"
-                :min="0.01"
-                :max="1.0"
-                :step="0.01"
-                :tip-format="v => `Zoom: ${(100*v).toFixed(0)}%`"
+	      <label>Number Elements Displayed: {{user_view.width_count}}</label>
+  	    <Slider v-model="user_view.width_count"
+                :min="10"
+                :max="1000"
+                :step="1"
+                :tip-format="v => `Count: ${v}`"
                 show-stops
               > </Slider>
       </div>
@@ -115,7 +115,7 @@ export default {
             },
             user_view: {
                 xpos_frac: 0.0,
-                width_frac: 0.01,
+                width_count: 50,
             },
             settings: {
                 strokeColor: "#19B5FF",
@@ -136,7 +136,7 @@ export default {
                 d[i] = rand(0,1)
             }
         });
-
+        
         console.log("dataum: ", this.datum[0]);
     },
     
@@ -147,7 +147,7 @@ export default {
             let height = 10 * (this.data_info.nrows + 2)
             
             let x_min = 0.0
-            let x_size = this.user_view.width_frac * this.data_info.ncols
+            let x_size = this.user_view.width_count // * this.data_info.ncols
             let x_pos = ((width - x_size) * this.user_view.xpos_frac).toFixed(3)
             
             let x_delta = this.data_info.ncols*1.0
@@ -169,7 +169,7 @@ export default {
             let min = Math.max(idx_pos - idx_width, 0)
             let max = Math.min(idx_max, idx_pos + 2*idx_width + 1)
             let count = max - min
-
+            
             return { min, max, count, idx_max}
         },
         
@@ -185,8 +185,9 @@ export default {
         y_idx_pos: function(idx) {
             return 10*idx;
         },
-      move: function ({deltaY: dY, deltaX: dX}) {
-        this.user_view.xpos_frac += dY / 1000.0;
+        move: function ({deltaY: dY, deltaX: dX}) {
+            let xf = this.user_view.xpos_frac
+            this.user_view.xpos_frac = Math.max(0.0, Math.min(1.0, xf + dY / 1000.0));
       },
     }
   }
